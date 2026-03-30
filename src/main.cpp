@@ -177,6 +177,10 @@ void loop() {
   static SMA<20, double, double> filter_R;
   double rpm_R = 0;
   double avgRPM_R = 0;
+  // EMA smoothing on top of SMA to reduce fractional jitter
+  static double emaAvgL = 0.0;
+  static double emaAvgR = 0.0;
+  const double emaAlpha = 0.15; // smaller -> smoother
 
   int emergency = analogRead(pin_Emergency);//TODO: Comment if emergency is removed 
   
@@ -195,9 +199,9 @@ void loop() {
       int _data = Serial.read();
       if(_data == char('m')) {
         Serial.print(getTeensySerial());
-        Serial.print(" | ");
-        Serial.println("Motion Module");
-        data = char('0');
+         Serial.print(" | ");
+         Serial.println("Motion Module");
+         data = char('0');
       } else if(_data == char('s')) {
         systemCounter = true;
         printAlter = false; //TODO: Can be Removed for fast testing
@@ -208,32 +212,18 @@ void loop() {
       } else if(_data == char('a')) {
         if (data != '3' || data != '4' || data != '0') {
             rpmAlter = !rpmAlter; 
-        }
-      } else if(_data == char('b')) {
+      } } else if(_data == char('b')) {
         if (data != '1' || data != '2' || data != '0') {
             rpmAlter_T = !rpmAlter_T; 
-        }
-      } else if(_data != 10) {
-        // If the incoming byte looks like the start of a numeric value, read the rest
-        if (isdigit(_data) || _data == '-' || _data == '+' || _data == '.') {
-          String s = String((char)_data);
-          s += Serial.readStringUntil('\n');
-          s.trim();
-          if (s.length() > 0) {
-            dataFloat = s.toFloat();
-            data = '0';
-            startTimeControlCounter = currentTimeControlCounter;
-          }
+      } } else if(_data != 10) {
+        data = _data;
+        if(_data == data && elaspedTimeControlCounter < timeConstantControlCounter) {
+          startTimeControlCounter = currentTimeControlCounter;
         } else {
           data = _data;
-          if(_data == data && elaspedTimeControlCounter < timeConstantControlCounter) {
-            startTimeControlCounter = currentTimeControlCounter;
-          } else {
-            data = _data;
-            startTimeControlCounter = currentTimeControlCounter;
-          }
+          startTimeControlCounter = currentTimeControlCounter;
         }
-      }
+      }  
     } else {
       String _data = Serial.readString();
       _data = _data.remove(_data.length()-1, 1);
@@ -241,16 +231,9 @@ void loop() {
         Serial.println("Chaging to Control Mode");
         systemCounter = false;
       } else if(_data.length() >= 1) {
-        // If the provided EEPROM update string is numeric, parse float first
-        String t = _data;
-        t.trim();
-        if (t.length() > 0 && (isDigit(t.charAt(0)) || t.charAt(0) == '.' || t.charAt(0) == '-' || t.charAt(0) == '+')) {
-          // attempt to parse a float; keep original string for EEPROM update as well
-          dataFloat = t.toFloat();
-        }
         updatedEEPROM(_data);
       }
-    }
+    } 
   }
 
   if(elaspedTimeControlCounter > timeConstantControlCounter) {
@@ -295,15 +278,21 @@ void loop() {
     avgRPM_L = filter_L((double)rpm_L);
     avgRPM_R = filter_R((double)rpm_R);
 
+    // update EMA (initialize EMA on first non-zero reading)
+    if (emaAvgL == 0.0 && avgRPM_L != 0.0) emaAvgL = avgRPM_L;
+    if (emaAvgR == 0.0 && avgRPM_R != 0.0) emaAvgR = avgRPM_R;
+    emaAvgL = emaAlpha * avgRPM_L + (1.0 - emaAlpha) * emaAvgL;
+    emaAvgR = emaAlpha * avgRPM_R + (1.0 - emaAlpha) * emaAvgR;
+
 
     if (printAlter == true) {
       Serial.print(data);
       Serial.print(" | ");
       Serial.print(emergency);
       Serial.print(" | ");
-      Serial.print(avgRPM_L, 2);
+      Serial.print(emaAvgL, 2);
       Serial.print(" | ");
-      Serial.print(avgRPM_R, 2);
+      Serial.print(emaAvgR, 2);
       Serial.print(" | ");
       Serial.print(1.0 / 16 * imu.eul_heading, 2);
       Serial.print(" | ");
