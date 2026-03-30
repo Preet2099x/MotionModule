@@ -55,6 +55,8 @@ extern float timeConstantControlCounter;
 //Pid Variable
 extern int rpmAlter; 
 extern int rpmAlter_T; 
+extern int straightTrimR;
+extern int straightTrimL;
 //Speed -> EEPROM Address
 extern int FLW;
 extern int FRW;

@@ -12,7 +12,7 @@ class SMA {
         if(input == 0.0) {
             return 0.0;
         }    else {
-        return (sum + (N / 2)) / N;
+        return sum / N;
         }
     }
     
