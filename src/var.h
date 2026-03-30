@@ -13,6 +13,7 @@ extern uint8_t OPR_MODE; // BNO register Operation Mode <3:0>
 extern uint8_t NDOF;
 
 extern char data;
+extern float dataFloat;
 
 //---------------------
 extern int pwmPin_L;
