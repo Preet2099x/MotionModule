@@ -83,24 +83,13 @@ bool  systemCounter = false;
 
 //Control Variable
 char  data = '0';
-//Floating-point value read from serial (when numeric input is provided)
-float dataFloat = 0.0;
 int rpmAlter_T = 0;
 int rpmAlter = 0;
 int _dirData = 0;
-// Straight trim offsets (defined here to satisfy externs in var.h)
-int straightTrimR = 0;
-int straightTrimL = 0;
 
 //Time Variable
 float timeConstant = 100; //MilliSecond 100 | 10 ONLY -> Function-> handletime
 float startTime, elaspedTime = 0, currentTime;
-
-const float ENCODER_COUNTS_PER_REV = 4000.0f;
-const float RPM_CALIBRATION_LEFT_FORWARD = 0.998f;
-const float RPM_CALIBRATION_RIGHT_FORWARD = 1.101f;
-const float RPM_CALIBRATION_LEFT_BACKWARD = 1.097f;
-const float RPM_CALIBRATION_RIGHT_BACKWARD = 0.924f;
 
 //Time Setup Control Counter
 float timeConstantControlCounter = 1000; //Chnage This As per Trail 
@@ -171,18 +160,14 @@ void loop() {
 
   kire.onReceive(receiveEvent);
 
-  //Handle Filter (use floating-point SMA for smoother float averages)
-  static SMA<20, double, double> filter_L;
+  //Handle Fliter
+  static SMA<20> filter_L;
   double rpm_L = 0;
-  double avgRPM_L = 0;
+  uint16_t avgRPM_L = 0;
 
-  static SMA<20, double, double> filter_R;
+  static SMA<20> filter_R;
   double rpm_R = 0;
-  double avgRPM_R = 0;
-  // EMA smoothing on top of SMA to reduce fractional jitter
-  static double emaAvgL = 0.0;
-  static double emaAvgR = 0.0;
-  const double emaAlpha = 0.15; // smaller -> smoother
+  uint16_t avgRPM_R = 0;
 
   int emergency = analogRead(pin_Emergency);//TODO: Comment if emergency is removed 
   
@@ -257,57 +242,38 @@ void loop() {
   } 
   
   if (elaspedTime > timeConstant) {
-    const float deltaTimeMs = elaspedTime;
     startTime = currentTime;
 
-    long encoderCountL = 0;
-    long encoderCountR = 0;
-    noInterrupts();
-    encoderCountL = encoderValue_L;
-    encoderCountR = encoderValue_R;
-    encoderValue_L = 0;
-    encoderValue_R = 0;
-    interrupts();
-
     //RPM Calculation
-    float rpmCalibL = RPM_CALIBRATION_LEFT_FORWARD;
-    float rpmCalibR = RPM_CALIBRATION_RIGHT_FORWARD;
-    if (data == '2') {
-      rpmCalibL = RPM_CALIBRATION_LEFT_BACKWARD;
-      rpmCalibR = RPM_CALIBRATION_RIGHT_BACKWARD;
-    }
-
-    rpm_L = ((abs(encoderCountL) * 60000.0f) / (ENCODER_COUNTS_PER_REV * deltaTimeMs)) * rpmCalibL;
-    rpm_R = ((abs(encoderCountR) * 60000.0f) / (ENCODER_COUNTS_PER_REV * deltaTimeMs)) * rpmCalibR;
+    rpm_L = ((abs(encoderValue_L)* 60 * handletime(timeConstant)) / 4000.00); // Change According to the time constant.
+    rpm_R = ((abs(encoderValue_R)* 60 * handletime(timeConstant)) / 4000.00);
     //rpm = (No of Pluses/Total Pules) * 1sec 
     //Total Pulse = Pulse * 4 where is changes in both the phases
     //SEC -> MilliSec 60*100 -> TimeConstant will be 100
     //SEC -> MilliSec 60*1000 -> TimeConstant will be 10
     
-    avgRPM_L = filter_L((double)rpm_L);
-    avgRPM_R = filter_R((double)rpm_R);
-
-    // update EMA (initialize EMA on first non-zero reading)
-    if (emaAvgL == 0.0 && avgRPM_L != 0.0) emaAvgL = avgRPM_L;
-    if (emaAvgR == 0.0 && avgRPM_R != 0.0) emaAvgR = avgRPM_R;
-    emaAvgL = emaAlpha * avgRPM_L + (1.0 - emaAlpha) * emaAvgL;
-    emaAvgR = emaAlpha * avgRPM_R + (1.0 - emaAlpha) * emaAvgR;
+    avgRPM_L = filter_L(rpm_L);
+    avgRPM_R = filter_R(rpm_R);
 
 
-    if (printAlter == true) {
+    if(printAlter == true) {  
       Serial.print(data);
       Serial.print(" | ");
+      //Serial.print(rpmAlter);
+      //Serial.print(" | ");
+      //Serial.print(rpmAlter_T);
+      //Serial.print(" | ");
       Serial.print(emergency);
       Serial.print(" | ");
-      Serial.print(emaAvgL, 2);
+      Serial.print(avgRPM_L);
       Serial.print(" | ");
-      Serial.print(emaAvgR, 2);
+      Serial.print(avgRPM_R);
       Serial.print(" | ");
-      Serial.print(1.0 / 16 * imu.eul_heading, 2);
+      Serial.print(1.0/16*imu.eul_heading);
       Serial.print(" | ");
-      Serial.print(1.0 / 16 * imu.eul_roll, 2);
+      Serial.print(1.0/16*imu.eul_roll);
       Serial.print(" | ");
-      Serial.print(1.0 / 16 * imu.eul_pitch, 2);
+      Serial.print(1.0/16*imu.eul_pitch);
       Serial.print(" | ");
       Serial.println(imu.temp);
       /*Serial.print(" | ");
@@ -319,6 +285,8 @@ void loop() {
       Serial.print(" | ");
       Serial.println((s.calib_stat >> 0) & 3); */
    }
+
+   encoderValue_L = encoderValue_R = 0;
 
   }
 

@@ -13,7 +13,6 @@ extern uint8_t OPR_MODE; // BNO register Operation Mode <3:0>
 extern uint8_t NDOF;
 
 extern char data;
-extern float dataFloat;
 
 //---------------------
 extern int pwmPin_L;
@@ -56,8 +55,6 @@ extern float timeConstantControlCounter;
 //Pid Variable
 extern int rpmAlter; 
 extern int rpmAlter_T; 
-extern int straightTrimR;
-extern int straightTrimL;
 //Speed -> EEPROM Address
 extern int FLW;
 extern int FRW;
