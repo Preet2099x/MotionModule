@@ -245,8 +245,8 @@ void loop() {
     startTime = currentTime;
 
     //RPM Calculation
-    rpm_L = ((abs(encoderValue_L)* 60 * handletime(timeConstant)) / 4000.00) * 1.6; 
-    rpm_R = ((abs(encoderValue_R)* 60 * handletime(timeConstant)) / 4000.00) * 1.6;
+    rpm_L = ((abs(encoderValue_L)* 60 * handletime(timeConstant)) / 4000.00) / 1.6; 
+    rpm_R = ((abs(encoderValue_R)* 60 * handletime(timeConstant)) / 4000.00) / 1.6;
     //rpm = (No of Pluses/Total Pules) * 1sec 
     //Total Pulse = Pulse * 4 where is changes in both the phases
     //SEC -> MilliSec 60*100 -> TimeConstant will be 100

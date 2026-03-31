@@ -20,7 +20,7 @@ void motion(char _data) {
     digitalWrite(dirPin_L, LOW);
     // analogWrite(pwmPin_R, rpmAlter == 0 ? 215: 250);
     // analogWrite(pwmPin_L, rpmAlter == 0 ? 205: 240);
-    analogWrite(pwmPin_R, 244);
+    analogWrite(pwmPin_R, 246);
     analogWrite(pwmPin_L, 250);
   } else if(_data == '2') {
     rpmAlter_T = false;
@@ -32,7 +32,7 @@ void motion(char _data) {
     // analogWrite(pwmPin_R, rpmAlter == 0 ? 202 : 240);
     // analogWrite(pwmPin_L, rpmAlter == 0 ? 211 : 249); 
     analogWrite(pwmPin_R, 250);
-    analogWrite(pwmPin_L, 250);
+    analogWrite(pwmPin_L, 242);
   } else if (_data == '3') {
     rpmAlter = false;
     //Serial5.write(rpmAlter_T == 0 ?TRR:FRD);
