@@ -97,8 +97,10 @@ float timeConstant = 100; //MilliSecond 100 | 10 ONLY -> Function-> handletime
 float startTime, elaspedTime = 0, currentTime;
 
 const float ENCODER_COUNTS_PER_REV = 4000.0f;
-const float RPM_CALIBRATION_LEFT = 0.573f;
-const float RPM_CALIBRATION_RIGHT = 0.685f;
+const float RPM_CALIBRATION_LEFT_FORWARD = 0.998f;
+const float RPM_CALIBRATION_RIGHT_FORWARD = 1.101f;
+const float RPM_CALIBRATION_LEFT_BACKWARD = 1.097f;
+const float RPM_CALIBRATION_RIGHT_BACKWARD = 0.924f;
 
 //Time Setup Control Counter
 float timeConstantControlCounter = 1000; //Chnage This As per Trail 
@@ -268,8 +270,15 @@ void loop() {
     interrupts();
 
     //RPM Calculation
-    rpm_L = ((abs(encoderCountL) * 60000.0f) / (ENCODER_COUNTS_PER_REV * deltaTimeMs)) * RPM_CALIBRATION_LEFT;
-    rpm_R = ((abs(encoderCountR) * 60000.0f) / (ENCODER_COUNTS_PER_REV * deltaTimeMs)) * RPM_CALIBRATION_RIGHT;
+    float rpmCalibL = RPM_CALIBRATION_LEFT_FORWARD;
+    float rpmCalibR = RPM_CALIBRATION_RIGHT_FORWARD;
+    if (data == '2') {
+      rpmCalibL = RPM_CALIBRATION_LEFT_BACKWARD;
+      rpmCalibR = RPM_CALIBRATION_RIGHT_BACKWARD;
+    }
+
+    rpm_L = ((abs(encoderCountL) * 60000.0f) / (ENCODER_COUNTS_PER_REV * deltaTimeMs)) * rpmCalibL;
+    rpm_R = ((abs(encoderCountR) * 60000.0f) / (ENCODER_COUNTS_PER_REV * deltaTimeMs)) * rpmCalibR;
     //rpm = (No of Pluses/Total Pules) * 1sec 
     //Total Pulse = Pulse * 4 where is changes in both the phases
     //SEC -> MilliSec 60*100 -> TimeConstant will be 100

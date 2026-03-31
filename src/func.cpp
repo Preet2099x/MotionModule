@@ -42,7 +42,7 @@ uint32_t getTeensySerial() {
 
 void receiveEvent(int bytesReceived) {
     int _data = kire.read(); 
-    Serial.print(_data);
+  //Serial.print(_data);
     if(_data == 'a') {
         if (data != '3' || data != '4' || data != '0') {
             rpmAlter = !rpmAlter; 
