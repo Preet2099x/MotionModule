@@ -18,8 +18,10 @@ void motion(char _data) {
     //-------------------------
     digitalWrite(dirPin_R, LOW);
     digitalWrite(dirPin_L, LOW);
-    analogWrite(pwmPin_R, rpmAlter == 0 ? 215: 250);
-    analogWrite(pwmPin_L, rpmAlter == 0 ? 205: 240);
+    // analogWrite(pwmPin_R, rpmAlter == 0 ? 215: 250);
+    // analogWrite(pwmPin_L, rpmAlter == 0 ? 205: 240);
+    analogWrite(pwmPin_R, 244);
+    analogWrite(pwmPin_L, 250);
   } else if(_data == '2') {
     rpmAlter_T = false;
     //Serial5.write(rpmAlter == 0 ? BRW : BRD); //Value RIGHT: 64(Stop) - 127(MAX) CCW
@@ -27,8 +29,10 @@ void motion(char _data) {
     
     digitalWrite(dirPin_R, HIGH);
     digitalWrite(dirPin_L, HIGH);
-    analogWrite(pwmPin_R, rpmAlter == 0 ? 202 : 240);
-    analogWrite(pwmPin_L, rpmAlter == 0 ? 211 : 249); 
+    // analogWrite(pwmPin_R, rpmAlter == 0 ? 202 : 240);
+    // analogWrite(pwmPin_L, rpmAlter == 0 ? 211 : 249); 
+    analogWrite(pwmPin_R, 250);
+    analogWrite(pwmPin_L, 250);
   } else if (_data == '3') {
     rpmAlter = false;
     //Serial5.write(rpmAlter_T == 0 ?TRR:FRD);
@@ -75,7 +79,6 @@ void motion(char _data) {
     //Serial5.write(rpmAlter == 0 ? BRW : BRD);
     //Serial5.write(TRL);
     digitalWrite(dirPin_L, HIGH);
-    digitalWrite(dirPin_R, HIGH);
     analogWrite(pwmPin_L, 150);
     analogWrite(pwmPin_R, rpmAlter == 0 ? 202 :245);
   } else {} 
