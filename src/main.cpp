@@ -90,8 +90,10 @@ int _dirData = 0;
 //Time Variable
 float timeConstant = 100; //MilliSecond 100 | 10 ONLY -> Function-> handletime
 float startTime, elaspedTime = 0, currentTime;
-float rpmScale_L = 1.9984;
-float rpmScale_R = 2.0492;
+// Tuned multipliers derived from tachometer logs
+// Goal: left ~76.5, right ~75.8
+float rpmScale_L = 1.93534;
+float rpmScale_R = 1.94640;
 
 //Time Setup Control Counter
 float timeConstantControlCounter = 1000; //Chnage This As per Trail 
@@ -163,13 +165,13 @@ void loop() {
   kire.onReceive(receiveEvent);
 
   //Handle Fliter
-  static SMA<20> filter_L;
+  static SMA<20, double, double> filter_L;
   double rpm_L = 0;
-  uint16_t avgRPM_L = 0;
+  double avgRPM_L = 0;
 
-  static SMA<20> filter_R;
+  static SMA<20, double, double> filter_R;
   double rpm_R = 0;
-  uint16_t avgRPM_R = 0;
+  double avgRPM_R = 0;
 
   int emergency = analogRead(pin_Emergency);//TODO: Comment if emergency is removed 
   
@@ -247,8 +249,8 @@ void loop() {
     startTime = currentTime;
 
     //RPM Calculation
-    rpm_L = ((abs(encoderValue_L)* 60 * handletime(timeConstant)) / 4000.00); 
-    rpm_R = ((abs(encoderValue_R)* 60 * handletime(timeConstant)) / 4000.00);
+    rpm_L = ((abs(encoderValue_L)* 60 * handletime(timeConstant)) / 4000.00) * rpmScale_L / 1.6; 
+    rpm_R = ((abs(encoderValue_R)* 60 * handletime(timeConstant)) / 4000.00) * rpmScale_R / 1.6;
     //rpm = (No of Pluses/Total Pules) * 1sec 
     //Total Pulse = Pulse * 4 where is changes in both the phases
     //SEC -> MilliSec 60*100 -> TimeConstant will be 100
@@ -267,9 +269,9 @@ void loop() {
       //Serial.print(" | ");
       Serial.print(emergency);
       Serial.print(" | ");
-      Serial.print(avgRPM_L * rpmScale_L);
+      Serial.print(avgRPM_L);
       Serial.print(" | ");
-      Serial.print(avgRPM_R * rpmScale_R);
+      Serial.print(avgRPM_R);
       Serial.print(" | ");
       Serial.print(1.0/16*imu.eul_heading);
       Serial.print(" | ");
