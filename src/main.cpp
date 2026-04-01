@@ -90,6 +90,8 @@ int _dirData = 0;
 //Time Variable
 float timeConstant = 100; //MilliSecond 100 | 10 ONLY -> Function-> handletime
 float startTime, elaspedTime = 0, currentTime;
+float rpmScale_L = 1.9984;
+float rpmScale_R = 2.0492;
 
 //Time Setup Control Counter
 float timeConstantControlCounter = 1000; //Chnage This As per Trail 
@@ -245,8 +247,8 @@ void loop() {
     startTime = currentTime;
 
     //RPM Calculation
-    rpm_L = ((abs(encoderValue_L)* 60 * handletime(timeConstant)) / 4000.00) / 1.6; 
-    rpm_R = ((abs(encoderValue_R)* 60 * handletime(timeConstant)) / 4000.00) / 1.6;
+    rpm_L = ((abs(encoderValue_L)* 60 * handletime(timeConstant)) / 4000.00); 
+    rpm_R = ((abs(encoderValue_R)* 60 * handletime(timeConstant)) / 4000.00);
     //rpm = (No of Pluses/Total Pules) * 1sec 
     //Total Pulse = Pulse * 4 where is changes in both the phases
     //SEC -> MilliSec 60*100 -> TimeConstant will be 100
@@ -265,9 +267,9 @@ void loop() {
       //Serial.print(" | ");
       Serial.print(emergency);
       Serial.print(" | ");
-      Serial.print(avgRPM_L);
+      Serial.print(avgRPM_L * rpmScale_L);
       Serial.print(" | ");
-      Serial.print(avgRPM_R);
+      Serial.print(avgRPM_R * rpmScale_R);
       Serial.print(" | ");
       Serial.print(1.0/16*imu.eul_heading);
       Serial.print(" | ");
